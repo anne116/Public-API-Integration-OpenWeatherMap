@@ -136,20 +136,39 @@ const App: React.FC = () => {
     <div style={{ padding: '20px' }}>
       <h1>Weather App</h1>
       <SearchBar onSearch={fetchWeather} />
-      <FilterBar filters={filters} onFilterChange={handleFilterChange} />
+
+      {!weather && (
+        <>
+          <FilterBar filters={filters} onFilterChange={handleFilterChange} />
+          <div>
+            {currentPage > 1 && (
+              <button onClick={() => handlePageChange(currentPage - 1)}>Previous</button>
+            )}
+            {cityBatch.length === pageSize && (
+              <button onClick={() => handlePageChange(currentPage + 1)}>Next</button>
+            )}
+          </div>
+        </>
+      )}
+
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {weather && !weatherData.length && <WeatherDisplay weather={weather} />}
-      {filteredWeatherData.length > 0 && 
-        filteredWeatherData.map(weather => <WeatherDisplay key={weather.id} weather={weather} />)}
-      <div>
-        {currentPage > 1 && (
-          <button onClick={() => handlePageChange(currentPage - 1)}>Previous</button>
-        )}
-        {cityBatch.length === pageSize && (
-          <button onClick={() => handlePageChange(currentPage + 1)}>Next</button>
-        )}
-      </div>
+
+      {weather ? (
+        <div>
+          <h2>Search Result</h2>
+          <WeatherDisplay weather={weather} />
+        </div>
+      ) : (
+        filteredWeatherData.length > 0 && (
+          <div>
+            <h2>Weather Data</h2>
+            {filteredWeatherData.map(weather => (
+              <WeatherDisplay key={weather.id} weather={weather} />
+            ))}
+          </div>
+        )
+      )}
     </div>
   );
 };

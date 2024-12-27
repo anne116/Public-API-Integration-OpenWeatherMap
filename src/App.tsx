@@ -4,6 +4,7 @@ import api from './api';
 import SearchBar from './components/SearchBar';
 import WeatherDisplay from './components/WeatherDisplay';
 import fetchCityBatch from './utils/fetchCityBatch';
+import FilterBar from './components/FilterBar';
 
 export interface WeatherData {
   name: string;
@@ -32,6 +33,12 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
 
+  const [filters, setFilters] = useState({
+    minTemp: '',
+    maxTemp: '',
+    minHumidity: '',
+    maxHumidity: '',
+  });
 
   const fetchBatchAndWeather = async (page: number) => {
     const startIndex = (page - 1) * pageSize;
@@ -94,20 +101,47 @@ const App: React.FC = () => {
     }
   };
 
+  // filter change handler
+  const handleFilterChange = (name: string, value: string) => {
+    setFilters((prev) => ({...prev, [name]: value }));
+  };
+
+  //apply filters
+  const applyFilters = () => {
+    return weatherData.filter((weather) => {
+      const temp = weather.main.temp;
+      const humidity = weather.main.humidity;
+
+      const isTempValid = 
+        (!filters.minTemp || temp >= parseFloat(filters.minTemp)) &&
+        (!filters.maxTemp || temp <= parseFloat(filters.maxTemp));
+
+      const isHumidityValid = 
+        (!filters.minHumidity || humidity >= parseFloat(filters.minHumidity)) &&
+        (!filters.maxHumidity || humidity <= parseFloat(filters.maxHumidity));
+
+      return isTempValid && isHumidityValid
+    });
+  };
+
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     fetchBatchAndWeather(newPage);
   };
 
+  // filtered weather data
+  const filteredWeatherData = applyFilters();
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Weather App</h1>
       <SearchBar onSearch={fetchWeather} />
+      <FilterBar filters={filters} onFilterChange={handleFilterChange} />
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {weather && !weatherData.length && <WeatherDisplay weather={weather} />}
-      {weatherData.length > 0 && 
-        weatherData.map(weather => <WeatherDisplay key={weather.id} weather={weather} />)}
+      {filteredWeatherData.length > 0 && 
+        filteredWeatherData.map(weather => <WeatherDisplay key={weather.id} weather={weather} />)}
       <div>
         {currentPage > 1 && (
           <button onClick={() => handlePageChange(currentPage - 1)}>Previous</button>

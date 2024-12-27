@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import api from './api';
 import SearchBar from './components/SearchBar';
 import WeatherDisplay from './components/WeatherDisplay';
+import fetchCityBatch from './utils/fetchCityBatch';
 
 export interface WeatherData {
   name: string;
@@ -25,6 +26,41 @@ const App: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const [cityBatch, setCityBatch] = useState<any[]>([]);
+  const [weatherData, setWeatherData] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 10;
+
+
+  const fetchBatchAndWeather = async (page: number) => {
+    const startIndex = (page - 1) * pageSize;
+
+    setLoading(true);
+    setError(null);
+
+    try{
+      // Fetch the current batch of cities
+      const batch = fetchCityBatch(startIndex, pageSize);
+      setCityBatch(batch);
+
+      // Fetch weather data for the batch
+      const cityIds = batch.map(city => city.cityId).join(',');
+      console.log(`Fetching weather data for city IDs: ${cityIds}`);
+      const response = await api.get('group', {params: {id: cityIds } });
+
+      setWeatherData(response.data.list);
+    } catch (error) {
+      console.log('Error fetching weather data: ', error);
+      setError('Failed to fetch city or weather data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBatchAndWeather(1);
+  }, []);
 
   const fetchWeather = async (city: string) => {
     if (!city.trim()) {
@@ -58,16 +94,30 @@ const App: React.FC = () => {
     }
   };
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    fetchBatchAndWeather(newPage);
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Weather App</h1>
       <SearchBar onSearch={fetchWeather} />
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {weather && <WeatherDisplay weather={weather} />}
+      {weather && !weatherData.length && <WeatherDisplay weather={weather} />}
+      {weatherData.length > 0 && 
+        weatherData.map(weather => <WeatherDisplay key={weather.id} weather={weather} />)}
+      <div>
+        {currentPage > 1 && (
+          <button onClick={() => handlePageChange(currentPage - 1)}>Previous</button>
+        )}
+        {cityBatch.length === pageSize && (
+          <button onClick={() => handlePageChange(currentPage + 1)}>Next</button>
+        )}
+      </div>
     </div>
   );
-
 };
 
 export default App;

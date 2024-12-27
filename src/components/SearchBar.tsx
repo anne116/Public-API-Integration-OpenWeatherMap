@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TextField, Button } from '@mui/material';
 
 interface SearchBarProps {
     onSearch: (city: string) => void;
@@ -15,20 +16,18 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     };
 
     return (
-        <div style={{ marginBottom: '20px' }}>
-            <input
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <TextField
                 type="text"
                 placeholder="Enter city name"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                style={{ padding: '10px', fontSize: '16px', width: '250px'}}
+                variant="outlined"
+                fullWidth
             />
-            <button
-                onClick={handleSearch}
-                style={{ marginLeft: '10px', padding: '10px 15px', fontSize: '16px' }}
-            >
+            <Button variant="contained" color="primary" onClick={handleSearch}>
                 Search
-            </button>
+            </Button>
         </div>
     );
 

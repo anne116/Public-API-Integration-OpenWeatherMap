@@ -1,55 +1,39 @@
 import React from 'react';
+import { Box, Typography, Slider } from '@mui/material';
 
 interface FilterBarProps {
     filters: {
-        minTemp: string;
-        maxTemp: string;
-        minHumidity: string;
-        maxHumidity: string
+        tempRange: number[];
+        humidityRange: number[];
     };
-    onFilterChange: (
-        name: string,
-        value: string
-    ) => void;
+    onFilterChange: ( name: string, value: number[] ) => void;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
     return (
-        <div>
-            <h3>Filter Weather Data</h3>
-            <label>
-                Min Temperature:
-                <input
-                    type="number"
-                    value={filters.minTemp}
-                    onChange={(e) => onFilterChange('minTemp', e.target.value)}
+        <Box sx={{ marginBottom: 4 }}>
+            <Typography variant="h6" gutterBottom>Filter Weather Data</Typography>
+            <Box sx={{ marginBottom: 2}}>
+                <Typography variant="subtitle1" gutterBottom>Temperature Range (°C)</Typography>
+                <Slider
+                    value={filters.tempRange}
+                    onChange={(e, value) => onFilterChange('tempRange', value as number[])}
+                    valueLabelDisplay="auto"
+                    min={-20}
+                    max={50}
                 />
-            </label>
-            <label>
-                Max Temperature:
-                <input
-                    type="number"
-                    value={filters.maxTemp}
-                    onChange={(e) => onFilterChange('maxTemp', e.target.value)}
+            </Box>
+            <Box sx={{ marginBottom: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>Humidity Range (%)</Typography>
+                <Slider
+                    value={filters.humidityRange}
+                    onChange={(e, value) => onFilterChange('humidityRange', value as number[])}
+                    valueLabelDisplay="auto"
+                    min={0}
+                    max={100}
                 />
-            </label>
-            <label>
-                Mix Humidity:
-                <input
-                    type="number"
-                    value={filters.minHumidity}
-                    onChange={(e) => onFilterChange('minHumidity', e.target.value)}
-                />
-            </label>
-            <label>
-                Max Humidity:
-                <input
-                    type="number"
-                    value={filters.maxHumidity}
-                    onChange={(e) => onFilterChange('maxHumidity', e.target.value)}
-                />
-            </label>
-        </div>
+            </Box>
+        </Box>
     );
 };
 

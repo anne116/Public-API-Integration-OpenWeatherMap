@@ -5,6 +5,7 @@ import SearchBar from './components/SearchBar';
 import WeatherDisplay from './components/WeatherDisplay';
 import fetchCityBatch from './utils/fetchCityBatch';
 import FilterBar from './components/FilterBar';
+import { Box, Container, Typography, Button, Grid2 as Grid } from '@mui/material';
 
 export interface WeatherData {
   name: string;
@@ -31,13 +32,11 @@ const App: React.FC = () => {
   const [cityBatch, setCityBatch] = useState<any[]>([]);
   const [weatherData, setWeatherData] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const pageSize = 10;
+  const pageSize = 12;
 
   const [filters, setFilters] = useState({
-    minTemp: '',
-    maxTemp: '',
-    minHumidity: '',
-    maxHumidity: '',
+    tempRange: [-20, 50],
+    humidityRange: [0,100],
   });
 
   const fetchBatchAndWeather = async (page: number) => {
@@ -102,24 +101,20 @@ const App: React.FC = () => {
   };
 
   // filter change handler
-  const handleFilterChange = (name: string, value: string) => {
+  const handleFilterChange = (name: string, value: number[]) => {
     setFilters((prev) => ({...prev, [name]: value }));
   };
 
   //apply filters
   const applyFilters = () => {
+    if (filters.tempRange[0] > filters.tempRange[1] || filters.humidityRange[0] > filters.humidityRange[1]) {
+      return [];
+    }
     return weatherData.filter((weather) => {
       const temp = weather.main.temp;
       const humidity = weather.main.humidity;
-
-      const isTempValid = 
-        (!filters.minTemp || temp >= parseFloat(filters.minTemp)) &&
-        (!filters.maxTemp || temp <= parseFloat(filters.maxTemp));
-
-      const isHumidityValid = 
-        (!filters.minHumidity || humidity >= parseFloat(filters.minHumidity)) &&
-        (!filters.maxHumidity || humidity <= parseFloat(filters.maxHumidity));
-
+      const isTempValid = temp >= filters.tempRange[0] && temp <= filters.tempRange[1];
+      const isHumidityValid = humidity >= filters.humidityRange[0] && humidity <= filters.humidityRange[1];
       return isTempValid && isHumidityValid
     });
   };
@@ -133,43 +128,66 @@ const App: React.FC = () => {
   const filteredWeatherData = applyFilters();
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Weather App</h1>
+    <Container>
+      <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
+        <Typography variant="h3" component="h1">Weather App</Typography>
+      </Box>
       <SearchBar onSearch={fetchWeather} />
 
       {!weather && (
         <>
-          <FilterBar filters={filters} onFilterChange={handleFilterChange} />
-          <div>
-            {currentPage > 1 && (
-              <button onClick={() => handlePageChange(currentPage - 1)}>Previous</button>
-            )}
-            {cityBatch.length === pageSize && (
-              <button onClick={() => handlePageChange(currentPage + 1)}>Next</button>
-            )}
-          </div>
+          <Box sx={{ marginBottom: 4 }}>
+            <FilterBar filters={filters} onFilterChange={handleFilterChange} />
+          </Box>
         </>
-      )}
+      )} 
 
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {loading && <Typography>Loading...</Typography>}
+      {error && <Typography color="error">{error}</Typography>}
 
       {weather ? (
-        <div>
-          <h2>Search Result</h2>
+        <Box>
+          <Typography variant="h5" sx={{ marginBottom: 2 }}>Search Result</Typography>
           <WeatherDisplay weather={weather} />
-        </div>
+        </Box>
       ) : (
         filteredWeatherData.length > 0 && (
-          <div>
-            <h2>Weather Data</h2>
-            {filteredWeatherData.map(weather => (
-              <WeatherDisplay key={weather.id} weather={weather} />
-            ))}
-          </div>
+          <Box>
+            <Typography variant="h5" sx={{ marginBottom: 2 }}>Weather Data</Typography>
+            <Grid container spacing={2} justifyContent="center">
+              {filteredWeatherData.map((weather) => (
+                <Grid xs={12} sm={6} md={4} lg={3} key={weather.id}>
+                  <WeatherDisplay weather={weather} />
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ textAlign: 'center', marginTop: 4 }}>
+              {currentPage > 1 && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  sx={{ marginRight: 2 }}
+                  disable={loading}
+                >
+                  Previous
+                </Button>
+              )}
+              {cityBatch.length === pageSize && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disable={loading}
+                >
+                  Next
+                </Button>
+              )}
+            </Box>
+          </Box>
         )
       )}
-    </div>
+    </Container>
   );
 };
 

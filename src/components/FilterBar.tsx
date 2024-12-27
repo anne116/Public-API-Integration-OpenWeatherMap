@@ -12,7 +12,6 @@ interface FilterBarProps {
 const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
     return (
         <Box sx={{ marginBottom: 4 }}>
-            <Typography variant="h6" gutterBottom>Filter Weather Data</Typography>
             <Box sx={{ marginBottom: 2}}>
                 <Typography variant="subtitle1" gutterBottom>Temperature Range (°C)</Typography>
                 <Slider

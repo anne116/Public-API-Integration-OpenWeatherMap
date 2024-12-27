@@ -5,7 +5,7 @@ import SearchBar from './components/SearchBar';
 import WeatherDisplay from './components/WeatherDisplay';
 import fetchCityBatch from './utils/fetchCityBatch';
 import FilterBar from './components/FilterBar';
-import { Box, Container, Typography, Button, Grid2 as Grid } from '@mui/material';
+import { Box, Container, Typography, Button, Grid2 as Grid, Tabs, Tab, ButtonBase } from '@mui/material';
 
 export interface WeatherData {
   name: string;
@@ -32,12 +32,22 @@ const App: React.FC = () => {
   const [cityBatch, setCityBatch] = useState<any[]>([]);
   const [weatherData, setWeatherData] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const pageSize = 12;
+  const pageSize = 8;
 
   const [filters, setFilters] = useState({
     tempRange: [-20, 50],
     humidityRange: [0,100],
   });
+
+  const resetAppState = () => {
+    setWeather(null);
+    setError(null);
+    setFilters({ tempRange: [-20, 50], humidityRange: [0,100] });
+    setCurrentPage(1);
+    fetchBatchAndWeather(1);
+  }
+
+  const [tabIndex, setTabIndex] = useState<number>(0);
 
   const fetchBatchAndWeather = async (page: number) => {
     const startIndex = (page - 1) * pageSize;
@@ -52,12 +62,10 @@ const App: React.FC = () => {
 
       // Fetch weather data for the batch
       const cityIds = batch.map(city => city.cityId).join(',');
-      console.log(`Fetching weather data for city IDs: ${cityIds}`);
       const response = await api.get('group', {params: {id: cityIds } });
 
       setWeatherData(response.data.list);
     } catch (error) {
-      console.log('Error fetching weather data: ', error);
       setError('Failed to fetch city or weather data.');
     } finally {
       setLoading(false);
@@ -107,7 +115,10 @@ const App: React.FC = () => {
 
   //apply filters
   const applyFilters = () => {
-    if (filters.tempRange[0] > filters.tempRange[1] || filters.humidityRange[0] > filters.humidityRange[1]) {
+    if (
+      filters.tempRange[0] > filters.tempRange[1] ||
+      filters.humidityRange[0] > filters.humidityRange[1]
+    ) {
       return [];
     }
     return weatherData.filter((weather) => {
@@ -124,23 +135,40 @@ const App: React.FC = () => {
     fetchBatchAndWeather(newPage);
   };
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+    setWeather(null);
+  }
+
   // filtered weather data
   const filteredWeatherData = applyFilters();
 
   return (
     <Container>
-      <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
-        <Typography variant="h3" component="h1">Weather App</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <ButtonBase onClick={resetAppState}>
+          <Typography variant="h4" component="h1" sx={{ cursor: 'pointer' }}>
+          🛰️WeatherWiz
+          </Typography>
+        </ButtonBase>
       </Box>
-      <SearchBar onSearch={fetchWeather} />
 
-      {!weather && (
-        <>
-          <Box sx={{ marginBottom: 4 }}>
-            <FilterBar filters={filters} onFilterChange={handleFilterChange} />
-          </Box>
-        </>
-      )} 
+      <Tabs value={tabIndex} onChange={handleTabChange} centered>
+        <Tab label="Search by City" />
+        <Tab label="Filter Weather Data" />
+      </Tabs>
+
+      {tabIndex === 0 && (
+        <Box sx={{ marginTop: 4 }}>
+          <SearchBar onSearch={fetchWeather} />
+        </Box>
+      )}
+
+      {tabIndex === 1 && (
+        <Box sx={{ marginTop: 4 }}>
+          <FilterBar filters={filters} onFilterChange={handleFilterChange} />
+        </Box>
+      )}
 
       {loading && <Typography>Loading...</Typography>}
       {error && <Typography color="error">{error}</Typography>}
@@ -153,7 +181,7 @@ const App: React.FC = () => {
       ) : (
         filteredWeatherData.length > 0 && (
           <Box>
-            <Typography variant="h5" sx={{ marginBottom: 2 }}>Weather Data</Typography>
+            <Typography variant="h5" sx={{ marginBottom: 2 }}>Results:</Typography>
             <Grid container spacing={2} justifyContent="center">
               {filteredWeatherData.map((weather) => (
                 <Grid xs={12} sm={6} md={4} lg={3} key={weather.id}>

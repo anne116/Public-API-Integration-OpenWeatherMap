@@ -20,6 +20,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
                     valueLabelDisplay="auto"
                     min={-20}
                     max={50}
+                    getAriaLabel={(index) => `Temperature Range ${index === 0 ? 'Min' : 'Max'} (°C)`}
                 />
             </Box>
             <Box sx={{ marginBottom: 2 }}>
@@ -30,6 +31,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange }) => {
                     valueLabelDisplay="auto"
                     min={0}
                     max={100}
+                    getAriaLabel={(index) => `Humidity Range ${index === 0 ? 'Min' : 'Max'} (%)`}
                 />
             </Box>
         </Box>

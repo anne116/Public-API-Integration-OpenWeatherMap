@@ -184,7 +184,7 @@ const App: React.FC = () => {
             <Typography variant="h5" sx={{ marginBottom: 2 }}>Results:</Typography>
             <Grid container spacing={2} justifyContent="center">
               {filteredWeatherData.map((weather) => (
-                <Grid xs={12} sm={6} md={4} lg={3} key={weather.id}>
+                <Grid key={weather.id}>
                   <WeatherDisplay weather={weather} />
                 </Grid>
               ))}
@@ -196,7 +196,7 @@ const App: React.FC = () => {
                   color="primary"
                   onClick={() => handlePageChange(currentPage - 1)}
                   sx={{ marginRight: 2 }}
-                  disable={loading}
+                  disabled={loading}
                 >
                   Previous
                 </Button>
@@ -206,7 +206,7 @@ const App: React.FC = () => {
                   variant="contained"
                   color="primary"
                   onClick={() => handlePageChange(currentPage + 1)}
-                  disable={loading}
+                  disabled={loading}
                 >
                   Next
                 </Button>

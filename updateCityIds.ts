@@ -2,7 +2,9 @@ import * as fs from 'fs';
 import * as Papa from 'papaparse';
 
 // Load city list JSON
-const cityList = JSON.parse(fs.readFileSync('./raw_data/city.list.json', 'utf8'));
+const cityList = JSON.parse(
+  fs.readFileSync('./raw_data/city.list.json', 'utf8')
+);
 
 // Load your CSV file
 const csvFile = fs.readFileSync('./raw_data/WorldCities.csv', 'utf8');
@@ -24,6 +26,9 @@ const updatedData = csvData.map((row: any) => {
 });
 
 // Write the updated CSV
-fs.writeFileSync('./src/data/UpdatedWorldCities(withCityId).json', JSON.stringify(updatedData, null, 2));
+fs.writeFileSync(
+  './src/data/UpdatedWorldCities(withCityId).json',
+  JSON.stringify(updatedData, null, 2)
+);
 
 console.log('Updated CSV written to UpdatedWorldCities.csv');

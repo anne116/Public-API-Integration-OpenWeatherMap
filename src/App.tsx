@@ -1,25 +1,34 @@
-import { useState, useEffect } from 'react'
-import './App.css'
+import { useState, useEffect } from 'react';
+import './App.css';
 import api from './api';
 import SearchBar from './components/SearchBar';
 import WeatherDisplay from './components/WeatherDisplay';
 import fetchCityBatch from './utils/fetchCityBatch';
 import FilterBar from './components/FilterBar';
-import { Box, Container, Typography, Button, Grid2 as Grid, Tabs, Tab, ButtonBase } from '@mui/material';
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Grid2 as Grid,
+  Tabs,
+  Tab,
+  ButtonBase,
+} from '@mui/material';
 
 export interface WeatherData {
   name: string;
-  main: { 
+  main: {
     temp: number;
     temp_min: number;
     temp_max: number;
     humidity: number;
   };
-  weather: { 
+  weather: {
     description: string;
     icon: string;
   }[];
-  wind: { 
+  wind: {
     speed: number;
   };
 }
@@ -36,16 +45,16 @@ const App: React.FC = () => {
 
   const [filters, setFilters] = useState({
     tempRange: [-20, 50],
-    humidityRange: [0,100],
+    humidityRange: [0, 100],
   });
 
   const resetAppState = () => {
     setWeather(null);
     setError(null);
-    setFilters({ tempRange: [-20, 50], humidityRange: [0,100] });
+    setFilters({ tempRange: [-20, 50], humidityRange: [0, 100] });
     setCurrentPage(1);
     fetchBatchAndWeather(1);
-  }
+  };
 
   const [tabIndex, setTabIndex] = useState<number>(0);
 
@@ -55,17 +64,15 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    try{
-      // Fetch the current batch of cities
+    try {
       const batch = fetchCityBatch(startIndex, pageSize);
       setCityBatch(batch);
 
-      // Fetch weather data for the batch
-      const cityIds = batch.map(city => city.cityId).join(',');
-      const response = await api.get('group', {params: {id: cityIds } });
+      const cityIds = batch.map((city) => city.cityId).join(',');
+      const response = await api.get('group', { params: { id: cityIds } });
 
       setWeatherData(response.data.list);
-    } catch (error) {
+    } catch {
       setError('Failed to fetch city or weather data.');
     } finally {
       setLoading(false);
@@ -80,27 +87,28 @@ const App: React.FC = () => {
     if (!city.trim()) {
       setError('Please enter a city name. City name cannot be empty.');
       setWeather(null);
-      return ;
+      return;
     }
 
-    setLoading(true); 
-    setError(null); 
+    setLoading(true);
+    setError(null);
 
     try {
       const response = await api.get('weather', {
         params: {
-          q:city
+          q: city,
         },
       });
       setWeather(response.data);
     } catch (err: any) {
-      console.error('API Error: ', err);
-      if (err.response?.status === 404 ) {
-        setError(`City "${city}" not found. Please try another city in English.`);
-      } else if (err.response?.status === 429 ) {
+      if (err.response?.status === 404) {
+        setError(
+          `City "${city}" not found. Please try another city in English.`
+        );
+      } else if (err.response?.status === 429) {
         setError('API quota exceeded. Please try again later.');
       } else {
-        setError('An unexpected error occurred. Please try again.')
+        setError('An unexpected error occurred. Please try again.');
       }
       setWeather(null);
     } finally {
@@ -108,12 +116,10 @@ const App: React.FC = () => {
     }
   };
 
-  // filter change handler
   const handleFilterChange = (name: string, value: number[]) => {
-    setFilters((prev) => ({...prev, [name]: value }));
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  //apply filters
   const applyFilters = () => {
     if (
       filters.tempRange[0] > filters.tempRange[1] ||
@@ -124,9 +130,12 @@ const App: React.FC = () => {
     return weatherData.filter((weather) => {
       const temp = weather.main.temp;
       const humidity = weather.main.humidity;
-      const isTempValid = temp >= filters.tempRange[0] && temp <= filters.tempRange[1];
-      const isHumidityValid = humidity >= filters.humidityRange[0] && humidity <= filters.humidityRange[1];
-      return isTempValid && isHumidityValid
+      const isTempValid =
+        temp >= filters.tempRange[0] && temp <= filters.tempRange[1];
+      const isHumidityValid =
+        humidity >= filters.humidityRange[0] &&
+        humidity <= filters.humidityRange[1];
+      return isTempValid && isHumidityValid;
     });
   };
 
@@ -138,17 +147,23 @@ const App: React.FC = () => {
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
     setWeather(null);
-  }
+  };
 
-  // filtered weather data
   const filteredWeatherData = applyFilters();
 
   return (
     <Container>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 4,
+        }}
+      >
         <ButtonBase onClick={resetAppState}>
           <Typography variant="h4" component="h1" sx={{ cursor: 'pointer' }}>
-          🛰️WeatherWiz
+            🛰️WeatherWiz
           </Typography>
         </ButtonBase>
       </Box>
@@ -175,13 +190,17 @@ const App: React.FC = () => {
 
       {weather ? (
         <Box>
-          <Typography variant="h5" sx={{ marginBottom: 2 }}>Search Result</Typography>
+          <Typography variant="h5" sx={{ marginBottom: 2 }}>
+            Search Result
+          </Typography>
           <WeatherDisplay weather={weather} />
         </Box>
       ) : (
         filteredWeatherData.length > 0 && (
           <Box>
-            <Typography variant="h5" sx={{ marginBottom: 2 }}>Results:</Typography>
+            <Typography variant="h5" sx={{ marginBottom: 2 }}>
+              Results:
+            </Typography>
             <Grid container spacing={2} justifyContent="center">
               {filteredWeatherData.map((weather) => (
                 <Grid key={weather.id}>

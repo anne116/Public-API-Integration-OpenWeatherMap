@@ -135,7 +135,7 @@ const App: React.FC = () => {
     fetchBatchAndWeather(newPage);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
     setWeather(null);
   }

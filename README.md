@@ -22,6 +22,45 @@
 - **Testing**: Jest for unit testing and edge case validation.
 - **Deployment**: Deployed on [Vercel](https://vercel.com/).
 
+## Code Architecture
+
+1. Component-Based Architecture
+
+- `App.tsx`: Acts as the central hub managing state and rendering child components.
+- Reusable Components:
+  - `SearchBar`: Handles user input for searching city weather.
+  - `FilterBar`: Allows users to filter weather data by temperature and humidity.
+  - `WeatherDisplay`: Dynamically displays weather details, either for a single city or a batch.
+- Component Styling: MUI's pre-built and customizable components were used for styling, ensuring a clean and cohesive design system.
+- Responsive Design: MUI's grid system and responsive utilities were used to create layouts that work seamlessly across devices.
+
+2. Utilities
+
+- `fetchCityBatch`: A utility function to handle pagination logic for local city data (`UpdatedWorldCities(withCityId).json`), fetching batches for efficient API usage.
+- `api.ts`: Encapsulates API-related logic, ensuring a centralized configuration for all HTTP requests (e.g., base URL, appid for authentication, units).
+
+3. State Management
+
+- `useState` hooks for managing individual states such as weather data, loading indicators, filters, and errors.
+- `useEffect` to trigger data fetching when the application loads or when a user interacts (e.g., page navigation).
+
+4. Data Handling
+
+- Local Data: A JSON dataset (`UpdatedWorldCities(withCityId).json`) is used for batching and providing city metadata.
+- API Integration: Fetches real-time weather data for selected cities via OpenWeatherMap's RESTful API.
+
+
+## Key Decisions Made During Development
+
+| **Decision**               | **Reason**                                                                                          | **Implementation**                                                                                                                                               |
+|----------------------------|---------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Pagination and Batching** | To avoid API rate limits and improve performance.                                                 | Used the `fetchCityBatch` utility to fetch a batch of cities based on the current page and `pageSize`. API calls use batch city IDs.                              |
+| **Error Handling**          | To provide meaningful feedback to users and handle edge cases.                                    | Centralized error management using `setError` state. Specific API error codes (e.g., `404`, `429`) are handled with tailored messages.                           |
+| **Modular Design**          | To improve scalability, maintainability, and code reuse.                                           | Components (`SearchBar`, `FilterBar`, `WeatherDisplay`) encapsulate logic and styles independently.                                                              |
+| **Responsive Design**       | To provide a seamless user experience across all device types.                                    | Leveraged Material-UI (MUI) for responsive, modern components and layouts.                                                                                   |
+| **API Integration**         | To retrieve real-time weather data efficiently.                                                   | Integrated OpenWeatherMap API for real-time data. Local JSON dataset (`UpdatedWorldCities(withCityId).json`) supports efficient batching.                         |
+
+
 ## Getting Started
 
 ### Prerequisites

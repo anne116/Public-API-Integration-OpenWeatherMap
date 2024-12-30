@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import api from './api';
+import api from './utils/api';
 import SearchBar from './components/SearchBar';
 import WeatherDisplay from './components/WeatherDisplay';
 import fetchCityBatch from './utils/fetchCityBatch';

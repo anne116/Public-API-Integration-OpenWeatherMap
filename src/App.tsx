@@ -20,6 +20,7 @@ import {
 
 export interface WeatherData {
   name: string;
+  cityId: number;
   main: {
     temp: number;
     temp_min: number;
@@ -72,7 +73,6 @@ const App: React.FC = () => {
 
       const cityIds = batch.map((city) => city.cityId).join(',');
       const response = await api.get('group', { params: { id: cityIds } });
-
       setWeatherData(response.data.list as WeatherData[]);
     } catch {
       setError('Failed to fetch city or weather data.');
@@ -209,7 +209,7 @@ const App: React.FC = () => {
             </Typography>
             <Grid container spacing={2} justifyContent="center">
               {filteredWeatherData.map((weather) => (
-                <Grid key={weather.id}>
+                <Grid key={weather.cityId}>
                   <WeatherDisplay weather={weather} />
                 </Grid>
               ))}

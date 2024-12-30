@@ -1,19 +1,27 @@
 import * as fs from 'fs';
 import * as Papa from 'papaparse';
 
-// Load city list JSON
-const cityList = JSON.parse(
+interface RawCity {
+  id: number;
+  name: string;
+  country: string;
+}
+
+interface CsvRow {
+  city: string;
+  iso2: string;
+}
+
+const cityList: RawCity[] = JSON.parse(
   fs.readFileSync('./raw_data/city.list.json', 'utf8')
 );
 
-// Load your CSV file
 const csvFile = fs.readFileSync('./raw_data/WorldCities.csv', 'utf8');
-const csvData = Papa.parse(csvFile, { header: true }).data;
+const csvData = Papa.parse(csvFile, { header: true }).data as CsvRow[];
 
-// Match and add city IDs
-const updatedData = csvData.map((row: any) => {
+const updatedData = csvData.map((row) => {
   const match = cityList.find(
-    (city: any) =>
+    (city) =>
       city.name.toLowerCase() === row.city.toLowerCase() &&
       city.country === row.iso2.toUpperCase()
   );
@@ -21,11 +29,10 @@ const updatedData = csvData.map((row: any) => {
   if (match) {
     return { ...row, cityId: match.id };
   } else {
-    return { ...row, cityId: 'NOT_FOUND' }; // Mark as unmatched
+    return { ...row, cityId: 'NOT_FOUND' };
   }
 });
 
-// Write the updated CSV
 fs.writeFileSync(
   './src/data/UpdatedWorldCities(withCityId).json',
   JSON.stringify(updatedData, null, 2)

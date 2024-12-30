@@ -1,6 +1,6 @@
 import UpdatedWorldCities from '../data/UpdatedWorldCities(withCityId).json';
 
-interface City {
+export interface City {
   IDs: string;
   cityId: number;
   city: string;

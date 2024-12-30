@@ -5,6 +5,8 @@ import SearchBar from './components/SearchBar';
 import WeatherDisplay from './components/WeatherDisplay';
 import fetchCityBatch from './utils/fetchCityBatch';
 import FilterBar from './components/FilterBar';
+import { City } from './utils/fetchCityBatch';
+import { AxiosError } from 'axios';
 import {
   Box,
   Container,
@@ -38,8 +40,8 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [cityBatch, setCityBatch] = useState<any[]>([]);
-  const [weatherData, setWeatherData] = useState<any[]>([]);
+  const [cityBatch, setCityBatch] = useState<City[]>([]);
+  const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 8;
 
@@ -71,7 +73,7 @@ const App: React.FC = () => {
       const cityIds = batch.map((city) => city.cityId).join(',');
       const response = await api.get('group', { params: { id: cityIds } });
 
-      setWeatherData(response.data.list);
+      setWeatherData(response.data.list as WeatherData[]);
     } catch {
       setError('Failed to fetch city or weather data.');
     } finally {
@@ -100,15 +102,19 @@ const App: React.FC = () => {
         },
       });
       setWeather(response.data);
-    } catch (err: any) {
-      if (err.response?.status === 404) {
-        setError(
-          `City "${city}" not found. Please try another city in English.`
-        );
-      } else if (err.response?.status === 429) {
-        setError('API quota exceeded. Please try again later.');
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        if (err.response?.status === 404) {
+          setError(
+            `City "${city}" not found. Please try another city in English.`
+          );
+        } else if (err.response?.status === 429) {
+          setError('API quota exceeded. Please try again later.');
+        } else {
+          setError('An unexpected error occurred. Please try again.');
+        }
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError('An unknown error occurred. Please try again.');
       }
       setWeather(null);
     } finally {

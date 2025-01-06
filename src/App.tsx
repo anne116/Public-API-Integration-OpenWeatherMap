@@ -8,6 +8,7 @@ import { City } from './utils/cityBatchHelper';
 import { fetchWeatherForCity } from './utils/singleCityApi';
 import { fetchWeatherForBatch } from './utils/batchCityApi';
 import { getErrorMessage } from './utils/errorHandler';
+import { applyFilters } from './utils/filterUtils';
 import {
   Box,
   Container,
@@ -113,24 +114,7 @@ const App: React.FC = () => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const applyFilters = () => {
-    if (
-      filters.tempRange[0] > filters.tempRange[1] ||
-      filters.humidityRange[0] > filters.humidityRange[1]
-    ) {
-      return [];
-    }
-    return weatherData.filter((weather) => {
-      const temp = weather.main.temp;
-      const humidity = weather.main.humidity;
-      const isTempValid =
-        temp >= filters.tempRange[0] && temp <= filters.tempRange[1];
-      const isHumidityValid =
-        humidity >= filters.humidityRange[0] &&
-        humidity <= filters.humidityRange[1];
-      return isTempValid && isHumidityValid;
-    });
-  };
+
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -142,7 +126,7 @@ const App: React.FC = () => {
     setWeather(null);
   };
 
-  const filteredWeatherData = applyFilters();
+  const filteredWeatherData = applyFilters(weatherData, filters);
 
   return (
     <Container>

@@ -10,6 +10,7 @@ import { fetchWeatherForBatch } from './utils/batchCityApi';
 import { getErrorMessage } from './utils/errorHandler';
 import { applyFilters } from './utils/filterUtils';
 import { getPaginationIndexes } from './utils/paginationHelper';
+import { resetAppState } from './utils/resetAppState';
 import {
   Box,
   Container,
@@ -52,14 +53,6 @@ const App: React.FC = () => {
     humidityRange: [0, 100],
   });
   const [tabIndex, setTabIndex] = useState<number>(0);
-
-  const resetAppState = () => {
-    setWeather(null);
-    setError(null);
-    setFilters({ tempRange: [-20, 50], humidityRange: [0, 100] });
-    setCurrentPage(1);
-    fetchBatchAndWeather(1);
-  };
 
   const fetchBatchAndWeather = async (page: number) => {
     const { startIndex } = getPaginationIndexes(page, pageSize)
@@ -127,7 +120,7 @@ const App: React.FC = () => {
           marginBottom: 4,
         }}
       >
-        <ButtonBase onClick={resetAppState}>
+        <ButtonBase onClick={() => resetAppState(setWeather, setError, setFilters, setCurrentPage, fetchBatchAndWeather )}>
           <Typography variant="h4" component="h1" sx={{ cursor: 'pointer' }}>
             🛰️WeatherWiz
           </Typography>

@@ -9,6 +9,7 @@ import { fetchWeatherForCity } from './utils/singleCityApi';
 import { fetchWeatherForBatch } from './utils/batchCityApi';
 import { getErrorMessage } from './utils/errorHandler';
 import { applyFilters } from './utils/filterUtils';
+import { getPaginationIndexes } from './utils/paginationHelper';
 import {
   Box,
   Container,
@@ -42,16 +43,15 @@ const App: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-
   const [cityBatch, setCityBatch] = useState<City[]>([]);
   const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 8;
-
   const [filters, setFilters] = useState({
     tempRange: [-20, 50],
     humidityRange: [0, 100],
   });
+  const [tabIndex, setTabIndex] = useState<number>(0);
 
   const resetAppState = () => {
     setWeather(null);
@@ -61,25 +61,18 @@ const App: React.FC = () => {
     fetchBatchAndWeather(1);
   };
 
-  const [tabIndex, setTabIndex] = useState<number>(0);
-
   const fetchBatchAndWeather = async (page: number) => {
-    const startIndex = (page - 1) * pageSize;
-
+    const { startIndex } = getPaginationIndexes(page, pageSize)
     setLoading(true);
     setError(null);
-
     try {
       const batch = fetchCityBatch(startIndex, pageSize);
       setCityBatch(batch);
-
       const cityIds = batch.map((city) => city.cityId).join(',');
       const data = await fetchWeatherForBatch(cityIds);
       setWeatherData(data);
-
     } catch (err: unknown) {
       setError(getErrorMessage(err));
-
     } finally {
       setLoading(false);
     }
@@ -95,10 +88,8 @@ const App: React.FC = () => {
       setWeather(null);
       return;
     }
-
     setLoading(true);
     setError(null);
-
     try {
       const data = await fetchWeatherForCity(city);
       setWeather(data);
@@ -113,8 +104,6 @@ const App: React.FC = () => {
   const handleFilterChange = (name: string, value: number[]) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
-
-
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);

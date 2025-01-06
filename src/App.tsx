@@ -7,7 +7,7 @@ import FilterBar from './components/FilterBar';
 import { City } from './utils/cityBatchHelper';
 import { fetchWeatherForCity } from './utils/singleCityApi';
 import { fetchWeatherForBatch } from './utils/batchCityApi';
-import { AxiosError } from 'axios';
+import { getErrorMessage } from './utils/errorHandler';
 import {
   Box,
   Container,
@@ -75,8 +75,10 @@ const App: React.FC = () => {
       const cityIds = batch.map((city) => city.cityId).join(',');
       const data = await fetchWeatherForBatch(cityIds);
       setWeatherData(data);
-    } catch {
-      setError('Failed to fetch city or weather data.');
+
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
+
     } finally {
       setLoading(false);
     }
@@ -100,19 +102,7 @@ const App: React.FC = () => {
       const data = await fetchWeatherForCity(city);
       setWeather(data);
     } catch (err: unknown) {
-      if (err instanceof AxiosError) {
-        if (err.response?.status === 404) {
-          setError(
-            `City "${city}" not found. Please try another city in English.`
-          );
-        } else if (err.response?.status === 429) {
-          setError('API quota exceeded. Please try again later.');
-        } else {
-          setError('An unexpected error occurred. Please try again.');
-        }
-      } else {
-        setError('An unknown error occurred. Please try again.');
-      }
+      setError(getErrorMessage(err));
       setWeather(null);
     } finally {
       setLoading(false);

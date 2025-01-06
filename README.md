@@ -34,10 +34,12 @@
 - Component Styling: MUI's pre-built and customizable components were used for styling, ensuring a clean and cohesive design system.
 - Responsive Design: MUI's grid system and responsive utilities were used to create layouts that work seamlessly across devices.
 
-2. Utilities
+2. **Utilities**
 
-- `fetchCityBatch`: A utility function to handle pagination logic for local city data (`UpdatedWorldCities(withCityId).json`), fetching batches for efficient API usage.
-- `api.ts`: Encapsulates API-related logic, ensuring a centralized configuration for all HTTP requests (e.g., base URL, appid for authentication, units).
+   - `cityBatchHelper.ts`: Fetches a batch of cities from the local dataset (`UpdatedWorldCities(withCityId).json`) for pagination. It uses `startIndex` and `pageSize` to determine the slice of cities to return, enabling efficient navigation through the dataset.
+   - `singleCityApi.ts`: Manages API calls for fetching weather data for a single city, centralizing and encapsulating logic for individual city requests.
+   - `batchCityApi.ts`: Handles API calls for fetching weather data for multiple cities in batches, ensuring reusable logic for bulk data requests.
+   - `api.ts`: Configures the Axios instance with base URL and default parameters (e.g., appid, units). Provides a centralized configuration for all HTTP requests, making the API calls consistent and maintainable.
 
 3. State Management
 

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import api from './utils/api';
 import SearchBar from './components/SearchBar';
 import WeatherDisplay from './components/WeatherDisplay';
-import fetchCityBatch from './utils/fetchCityBatch';
+import fetchCityBatch from './utils/cityBatchHelper';
 import FilterBar from './components/FilterBar';
-import { City } from './utils/fetchCityBatch';
+import { City } from './utils/cityBatchHelper';
+import { fetchWeatherForCity } from './utils/singleCityApi';
+import { fetchWeatherForBatch } from './utils/batchCityApi';
 import { AxiosError } from 'axios';
 import {
   Box,
@@ -72,8 +73,8 @@ const App: React.FC = () => {
       setCityBatch(batch);
 
       const cityIds = batch.map((city) => city.cityId).join(',');
-      const response = await api.get('group', { params: { id: cityIds } });
-      setWeatherData(response.data.list as WeatherData[]);
+      const data = await fetchWeatherForBatch(cityIds);
+      setWeatherData(data);
     } catch {
       setError('Failed to fetch city or weather data.');
     } finally {
@@ -96,12 +97,8 @@ const App: React.FC = () => {
     setError(null);
 
     try {
-      const response = await api.get('weather', {
-        params: {
-          q: city,
-        },
-      });
-      setWeather(response.data);
+      const data = await fetchWeatherForCity(city);
+      setWeather(data);
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         if (err.response?.status === 404) {

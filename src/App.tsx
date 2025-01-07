@@ -2,15 +2,10 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import SearchBar from './components/SearchBar';
 import WeatherDisplay from './components/WeatherDisplay';
-import fetchCityBatch from './utils/cityBatchHelper';
 import FilterBar from './components/FilterBar';
-import { City } from './utils/cityBatchHelper';
-import { fetchWeatherForCity } from './utils/singleCityApi';
-import { fetchWeatherForBatch } from './utils/batchCityApi';
-import { getErrorMessage } from './utils/errorHandler';
 import { applyFilters } from './utils/filterUtils';
-import { getPaginationIndexes } from './utils/paginationHelper';
 import { resetAppState } from './utils/resetAppState';
+import useWeatherData from './hooks/useWeatherData';
 import {
   Box,
   Container,
@@ -22,77 +17,30 @@ import {
   ButtonBase,
 } from '@mui/material';
 
-export interface WeatherData {
-  name: string;
-  cityId: number;
-  main: {
-    temp: number;
-    temp_min: number;
-    temp_max: number;
-    humidity: number;
-  };
-  weather: {
-    description: string;
-    icon: string;
-  }[];
-  wind: {
-    speed: number;
-  };
-}
-
 const App: React.FC = () => {
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [cityBatch, setCityBatch] = useState<City[]>([]);
-  const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 8;
+  const {
+    weather,
+    error,
+    loading,
+    cityBatch,
+    weatherData,
+    setError,
+    setWeather,
+    fetchWeatherByCity,
+    fetchWeatherBatch,
+  } = useWeatherData(pageSize);
+
   const [filters, setFilters] = useState({
     tempRange: [-20, 50],
     humidityRange: [0, 100],
   });
   const [tabIndex, setTabIndex] = useState<number>(0);
-
-  const fetchBatchAndWeather = async (page: number) => {
-    const { startIndex } = getPaginationIndexes(page, pageSize)
-    setLoading(true);
-    setError(null);
-    try {
-      const batch = fetchCityBatch(startIndex, pageSize);
-      setCityBatch(batch);
-      const cityIds = batch.map((city) => city.cityId).join(',');
-      const data = await fetchWeatherForBatch(cityIds);
-      setWeatherData(data);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   useEffect(() => {
-    fetchBatchAndWeather(1);
+    fetchWeatherBatch(1);
   }, []);
-
-  const fetchWeather = async (city: string) => {
-    if (!city.trim()) {
-      setError('Please enter a city name. City name cannot be empty.');
-      setWeather(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await fetchWeatherForCity(city);
-      setWeather(data);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-      setWeather(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleFilterChange = (name: string, value: number[]) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
@@ -100,7 +48,7 @@ const App: React.FC = () => {
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    fetchBatchAndWeather(newPage);
+    fetchWeatherBatch(newPage);
   };
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
@@ -120,7 +68,7 @@ const App: React.FC = () => {
           marginBottom: 4,
         }}
       >
-        <ButtonBase onClick={() => resetAppState(setWeather, setError, setFilters, setCurrentPage, fetchBatchAndWeather )}>
+        <ButtonBase onClick={() => resetAppState(setWeather, setError, setFilters, setCurrentPage, fetchWeatherBatch )}>
           <Typography variant="h4" component="h1" sx={{ cursor: 'pointer' }}>
             🛰️WeatherWiz
           </Typography>
@@ -134,7 +82,7 @@ const App: React.FC = () => {
 
       {tabIndex === 0 && (
         <Box sx={{ marginTop: 4 }}>
-          <SearchBar onSearch={fetchWeather} />
+          <SearchBar onSearch={fetchWeatherByCity} />
         </Box>
       )}
 
@@ -161,8 +109,8 @@ const App: React.FC = () => {
               Results:
             </Typography>
             <Grid container spacing={2} justifyContent="center">
-              {filteredWeatherData.map((weather) => (
-                <Grid key={weather.cityId}>
+              {filteredWeatherData.map((weather, index) => (
+                <Grid key={weather.cityId || `weather-${index}`}>
                   <WeatherDisplay weather={weather} />
                 </Grid>
               ))}

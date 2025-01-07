@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography } from '@mui/material';
-import { WeatherData } from '../App';
+import { WeatherData } from '../hooks/useWeatherData';
 
 const WeatherDisplay = ({ weather }: { weather: WeatherData }) => (
   <Card style={{ margin: '10px' }}>

@@ -1,4 +1,4 @@
-import { WeatherData } from '../App';
+import { WeatherData } from '../hooks/useWeatherData';
 
 export const applyFilters = (
     weatherData: WeatherData[],
